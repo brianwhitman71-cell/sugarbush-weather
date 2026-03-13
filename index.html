@@ -5984,8 +5984,7 @@
     setInterval(fetchAndRenderLiftTrailsAndTicker, 5 * 60 * 1000);
     setInterval(() => { renderRoadConditions('btv-roads'); renderParkingStatus(); }, 10 * 60 * 1000);
     setInterval(() => { if (foodRendered) renderFood(); }, 5 * 60 * 1000);
-    // PREVIEW: heavy snow, 20mph wind, 40mph gusts
-    setTimeout(() => startSnowfall(0.9, 20, 270, 40), 500);
+
 </script>
 <canvas id="snow-canvas" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998"></canvas>
 <canvas id="rain-canvas" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9997"></canvas>
