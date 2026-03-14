@@ -1337,8 +1337,8 @@
 </footer>
 
 <script>
-    const LAT = 44.1344;
-    const LON = -72.9081;
+    const LAT = 44.1273;
+    const LON = -72.9284;
 
     // WMO weather interpretation codes
     const WMO = {
@@ -1508,6 +1508,7 @@
             const q = new URLSearchParams({
                 latitude: LAT,
                 longitude: LON,
+                elevation: 1212,
                 current: [
                     'temperature_2m','apparent_temperature','relative_humidity_2m',
                     'precipitation','rain','snowfall','snow_depth',
