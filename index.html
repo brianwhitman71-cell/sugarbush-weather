@@ -1539,8 +1539,12 @@
             render(data);
             fetchSeasonSnow();
             const _wc = data.current.weather_code;
-            const _isSnowing = SNOW_CODES.has(_wc) || (data.current.snowfall > 0);
-            const _snowIntensity = SNOW_INTENSITY[_wc] ?? Math.min(1, (data.current.snowfall || 0) * 2);
+            const _todaySnow = data.daily.snowfall_sum[7] || 0;
+            const _isSnowing = SNOW_CODES.has(_wc) || (data.current.snowfall > 0) || (_todaySnow > 0.05);
+            const _snowIntensity = SNOW_INTENSITY[_wc] ?? Math.min(1, Math.max(
+                (data.current.snowfall || 0) * 2,
+                _todaySnow > 0.05 ? Math.min(0.6, 0.25 + _todaySnow / 8) : 0
+            ));
             if (_isSnowing) {
                 _lastSnowArgs = [_snowIntensity || 0.25, data.current.wind_speed_10m, data.current.wind_direction_10m, data.current.wind_gusts_10m];
                 if (!_snowUserOff) startSnowfall(..._lastSnowArgs);
@@ -5740,7 +5744,7 @@
 
     // ── Snowfall overlay ──────────────────────────────────────────────────
     const SNOW_CODES = new Set([71, 73, 75, 77, 85, 86, 68, 69, 79]);
-    const SNOW_INTENSITY = { 71: 0.25, 73: 0.55, 75: 0.9, 77: 0.2, 85: 0.45, 86: 0.85, 68: 0.3, 69: 0.6, 79: 0.35 };
+    const SNOW_INTENSITY = { 71: 0.5, 73: 0.65, 75: 0.9, 77: 0.35, 85: 0.55, 86: 0.85, 68: 0.4, 69: 0.65, 79: 0.45 };
     let _snowRaf = null;
     let _snowUserOff = false;   // user manually toggled off
     let _lastSnowArgs = null;   // last startSnowfall args so toggle can restore
@@ -5813,8 +5817,8 @@
         const gustAmpX  = Math.sin(windRad) * Math.max(0, ((gustMph || windMph || 0) - (windMph || 0))) * 0.32;
 
         // Non-linear count: light flurries = sparse, heavy snow = dense
-        // intensity 0.2 → ~20 flakes, 0.55 → ~110, 0.9 → ~270
-        const count = Math.round(intensity * intensity * 280 + intensity * 25);
+        // intensity 0.5 → ~82 flakes, 0.65 → ~143, 0.9 → ~249
+        const count = Math.max(40, Math.round(intensity * intensity * 280 + intensity * 25));
         const maxOpacity = 0.3 + intensity * 0.65;  // light snow is more transparent
         _snowFlakes = Array.from({ length: count }, () => {
             const r = 0.5 + Math.random() * (0.8 + intensity * 3.8);
