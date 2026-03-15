@@ -587,6 +587,17 @@
         .view { display: none; }
         .view.active { display: block; }
 
+        /* Mountain Report */
+        .mountain-report-body { font-size: 0.95rem; line-height: 1.7; color: #cde4f0; }
+        .mountain-report-body p { margin-bottom: 0.9rem; }
+        .mountain-report-body h1, .mountain-report-body h2, .mountain-report-body h3 {
+            color: #7ec8e3; margin: 1.2rem 0 0.5rem; font-size: 1rem; font-weight: 600;
+        }
+        .mountain-report-body ul, .mountain-report-body ol { padding-left: 1.4rem; margin-bottom: 0.9rem; }
+        .mountain-report-body li { margin-bottom: 0.3rem; }
+        .mountain-report-body a { color: #38bdf8; }
+        .mountain-report-body strong, .mountain-report-body b { color: #e0eef8; }
+
         .page-header {
             display: flex; align-items: center; gap: 0.75rem;
             margin-bottom: 1.5rem; padding-bottom: 0.75rem;
@@ -1109,6 +1120,9 @@
         <div class="nav-item active" id="nav-home" onclick="navigateTo('home')">
             <span class="nav-item-icon">🏠</span> Home
         </div>
+        <div class="nav-item" id="nav-report" onclick="navigateTo('report')">
+            <span class="nav-item-icon">📋</span> Today's Mountain Report
+        </div>
         <div class="nav-divider"></div>
         <div class="nav-section-label">Explore</div>
         <div class="nav-item" id="nav-food" onclick="navigateTo('food')">
@@ -1197,6 +1211,7 @@
     <div class="header-right">
         <button id="snow-toggle-btn" title="Toggle snow effect" onclick="toggleSnowOverlay()" style="display:none">❄</button>
         <span id="last-updated"></span>
+        <button class="refresh-btn" onclick="navigateTo('report')" style="background:rgba(56,189,248,0.15);border-color:rgba(56,189,248,0.4);color:#7ec8e3">📋 Today's Mountain Report</button>
         <button class="refresh-btn" id="refresh-btn" onclick="fetchWeather()">&#8635; Refresh</button>
     </div>
 </header>
@@ -1326,6 +1341,15 @@
             <span class="page-title">🥕 Farmers Markets</span>
         </div>
         <div id="markets-content"></div>
+    </div>
+
+    <!-- Mountain Report view -->
+    <div id="view-report" class="view">
+        <div class="page-header">
+            <button class="page-back-btn" onclick="navigateTo('home')">← Back</button>
+            <span class="page-title">📋 Today's Mountain Report</span>
+        </div>
+        <div id="report-content"></div>
     </div>
 
 </div>
@@ -5572,8 +5596,46 @@
             renderWinter();
             winterRendered = true;
         }
+        if (page === 'report') {
+            fetchAndRenderMountainReport();
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    // ── Mountain Report ───────────────────────────────────────────────────
+    async function fetchAndRenderMountainReport() {
+        const container = document.getElementById('report-content');
+        container.innerHTML = _loadingHtml('Loading mountain report…');
+        try {
+            const res = await fetch('https://api.mtnfeed.com/sugarbush');
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const data = await res.json();
+            const report = data.SnowReport && data.SnowReport.Report;
+            const lastUpdate = data.LastUpdate || (data.SnowReport && data.SnowReport.LastUpdate) || '';
+            if (!report || report === '--' || report.trim() === '') {
+                container.innerHTML = `<div class="card" style="margin-top:1rem">
+                    <p style="color:#567a96;font-size:0.9rem">No mountain report available right now.
+                    <a href="https://www.sugarbush.com/mountain/conditions" target="_blank" rel="noopener" style="color:#38bdf8">Check sugarbush.com ↗</a></p>
+                </div>`;
+                return;
+            }
+            const updated = lastUpdate ? `<div style="font-size:0.7rem;color:#567a96;margin-bottom:1.25rem;text-transform:uppercase;letter-spacing:1px">Last updated: ${lastUpdate}</div>` : '';
+            container.innerHTML = `
+                <div class="card" style="margin-top:1rem;max-width:760px">
+                    ${updated}
+                    <div class="mountain-report-body">${report}</div>
+                    <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.08);font-size:0.72rem;color:#3d6680">
+                        Source: <a href="https://www.sugarbush.com/mountain/conditions" target="_blank" rel="noopener" style="color:#38bdf8">sugarbush.com/mountain/conditions</a>
+                    </div>
+                </div>`;
+        } catch(e) {
+            container.innerHTML = `<div class="card" style="margin-top:1rem">
+                <p style="color:#f87171;font-size:0.85rem">Could not load mountain report — ${e.message}</p>
+                <p style="margin-top:0.5rem"><a href="https://www.sugarbush.com/mountain/conditions" target="_blank" rel="noopener" style="color:#38bdf8">View on sugarbush.com ↗</a></p>
+            </div>`;
+        }
+    }
+
     // ───────────────────────────────────────────────────────────────────────
 
     // ── Ticker ────────────────────────────────────────────────────────────
