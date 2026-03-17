@@ -3,12 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#071523">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sugarbush">
     <title>Everything Sugarbush</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         /* Mobile touch improvements */
         :root { --header-h: 64px; }
-        html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+        html {
+            -webkit-text-size-adjust: 100%; text-size-adjust: 100%;
+            background: #071523; /* Prevent white flash on iOS overscroll */
+        }
         button, [role="button"], a, .nav-item, .trail-tab-btn, .evt-filter-btn,
         .carousel-btn, .carousel-dot, .refresh-btn, .page-back-btn, .menu-btn,
         .nav-close-btn, .webcam-play, .food-link, .brewery-link, .btv-map-btn {
@@ -588,7 +595,7 @@
         .view.active { display: block; }
 
         /* Mountain Report */
-        .mountain-report-body { font-size: 0.95rem; line-height: 1.7; color: #cde4f0; }
+        .mountain-report-body { font-size: 0.95rem; line-height: 1.7; color: #cde4f0; word-break: break-word; }
         .mountain-report-body p { margin-bottom: 0.9rem; }
         .mountain-report-body h1, .mountain-report-body h2, .mountain-report-body h3 {
             color: #7ec8e3; margin: 1.2rem 0 0.5rem; font-size: 1rem; font-weight: 600;
@@ -597,6 +604,11 @@
         .mountain-report-body li { margin-bottom: 0.3rem; }
         .mountain-report-body a { color: #38bdf8; }
         .mountain-report-body strong, .mountain-report-body b { color: #e0eef8; }
+        .mountain-report-body img { max-width: 100%; height: auto; border-radius: 8px; }
+        .mountain-report-body table { max-width: 100%; overflow-x: auto; display: block; border-collapse: collapse; font-size: 0.85rem; }
+        .mountain-report-body td, .mountain-report-body th { padding: 0.4rem 0.6rem; border: 1px solid rgba(255,255,255,0.1); }
+        /* Hide header report button on small screens — use nav menu instead */
+        @media (max-width: 600px) { #mountain-report-header-btn { display: none; } }
 
         .page-header {
             display: flex; align-items: center; gap: 0.75rem;
@@ -1211,7 +1223,7 @@
     <div class="header-right">
         <button id="snow-toggle-btn" title="Toggle snow effect" onclick="toggleSnowOverlay()" style="display:none">❄</button>
         <span id="last-updated"></span>
-        <button class="refresh-btn" onclick="navigateTo('report')" style="background:rgba(56,189,248,0.15);border-color:rgba(56,189,248,0.4);color:#7ec8e3">📋 Today's Mountain Report</button>
+        <button id="mountain-report-header-btn" class="refresh-btn" onclick="navigateTo('report')" style="background:rgba(56,189,248,0.15);border-color:rgba(56,189,248,0.4);color:#7ec8e3">📋 Today's Mountain Report</button>
         <button class="refresh-btn" id="refresh-btn" onclick="fetchWeather()">&#8635; Refresh</button>
     </div>
 </header>
@@ -5603,6 +5615,15 @@
     }
 
     // ── Mountain Report ───────────────────────────────────────────────────
+    function _sanitizeHtml(html) {
+        // Strip tags that could execute code or cause layout issues
+        return html
+            .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+            .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '')
+            .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+            .replace(/\son\w+\s*=\s*["'][^"']*["']/gi, '');
+    }
+
     async function fetchAndRenderMountainReport() {
         const container = document.getElementById('report-content');
         container.innerHTML = _loadingHtml('Loading mountain report…');
@@ -5623,7 +5644,7 @@
             container.innerHTML = `
                 <div class="card" style="margin-top:1rem;max-width:760px">
                     ${updated}
-                    <div class="mountain-report-body">${report}</div>
+                    <div class="mountain-report-body">${_sanitizeHtml(report)}</div>
                     <div style="margin-top:1.5rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.08);font-size:0.72rem;color:#3d6680">
                         Source: <a href="https://www.sugarbush.com/mountain/conditions" target="_blank" rel="noopener" style="color:#38bdf8">sugarbush.com/mountain/conditions</a>
                     </div>
