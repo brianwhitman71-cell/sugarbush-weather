@@ -607,8 +607,39 @@
         .mountain-report-body img { max-width: 100%; height: auto; border-radius: 8px; }
         .mountain-report-body table { max-width: 100%; overflow-x: auto; display: block; border-collapse: collapse; font-size: 0.85rem; }
         .mountain-report-body td, .mountain-report-body th { padding: 0.4rem 0.6rem; border: 1px solid rgba(255,255,255,0.1); }
-        /* Hide header report button on small screens — use nav menu instead */
+        /* Hide header report button on small screens — shown as banner in home view instead */
         @media (max-width: 600px) { #mountain-report-header-btn { display: none; } }
+
+        /* Mobile mountain report banner (home view only) */
+        .mobile-report-banner {
+            display: none;
+        }
+        @media (max-width: 600px) {
+            .mobile-report-banner {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 0.5rem;
+                width: 100%;
+                padding: 0.75rem 1rem;
+                margin-bottom: 1rem;
+                background: rgba(56,189,248,0.12);
+                border: 1px solid rgba(56,189,248,0.35);
+                border-radius: 12px;
+                color: #7ec8e3;
+                font-size: 0.9rem;
+                font-weight: 600;
+                cursor: pointer;
+                min-height: 48px;
+                text-align: center;
+                transition: background 0.18s;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            .mobile-report-banner:active {
+                background: rgba(56,189,248,0.22);
+            }
+        }
 
         .page-header {
             display: flex; align-items: center; gap: 0.75rem;
@@ -1237,6 +1268,7 @@
     <!-- Home view -->
     <div id="view-home" class="view active">
         <div id="photo-carousel-wrap"></div>
+        <button class="mobile-report-banner" onclick="navigateTo('report')">📋 Today's Mountain Report</button>
         <div id="content">
             <div class="loading">
                 <div class="spinner"></div>
